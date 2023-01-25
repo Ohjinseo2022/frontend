@@ -1,11 +1,53 @@
 <template>
-  <nav>
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </nav>
-  <router-view/>
+  <div class="appview">
+    <HeaderLayOut />
+    <router-view />
+    <FooterLayOut />
+  </div>
 </template>
+<script>
+import axios from 'axios'
+import { useRoute } from 'vue-router'
+import { useStore } from 'vuex'
+import FooterLayOut from './components/FooterLayOut.vue'
+import HeaderLayOut from './components/HeaderLayOut.vue'
+import { watch } from '@vue/runtime-core'
+export default {
+  components: { HeaderLayOut, FooterLayOut },
+  setup() {
+    const store = useStore()
 
+    const check = () => {
+      axios.get('/api/login/check').then((res) => {
+        if (res.data || res.data !== '') {
+          console.log(res.data)
+          store.commit('setAccount', res.data)
+          console.log('로그인중')
+        } else {
+          store.commit('setAccount', 0)
+
+          console.log('로그인이 필요함')
+        }
+      })
+    }
+    const findName = () => {
+      axios.get('/api/login/findName').then((res) => {
+        if (res.data) {
+          console.log(res.data)
+          store.commit('setName', res.data)
+        }
+      })
+    }
+
+    const route = useRoute()
+    // 경로변경이 확인될떄마다 확인해주는 함수
+    watch(route, () => {
+      check()
+      findName()
+    })
+  }
+}
+</script>
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -14,17 +56,28 @@
   text-align: center;
   color: #2c3e50;
 }
-
-nav {
-  padding: 30px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
-
-nav a {
+a {
+  color: inherit;
+  text-decoration: none;
+}
+.appview {
+  width: 1440px;
+  margin: 0 auto;
+}
+button {
+  background-color: #7f00cb;
+  border: 0;
+  font-size: 1rem;
   font-weight: bold;
-  color: #2c3e50;
+  border-radius: 5px;
+  color: #c9c6c6;
 }
-
-nav a.router-link-exact-active {
-  color: #42b983;
+button:active {
+  background-color: #ec65ff;
 }
 </style>
