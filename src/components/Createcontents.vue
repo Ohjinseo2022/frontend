@@ -30,6 +30,7 @@
 <script>
 import router from '@/router'
 import { reactive } from '@vue/reactivity'
+import axios from 'axios'
 export default {
   components: {},
   data() {
@@ -40,8 +41,6 @@ export default {
   setup() {
     const state = reactive({
       from: {
-        idx: 0,
-        id: '',
         title: '',
         contents: '',
         uptime: ''
@@ -51,16 +50,27 @@ export default {
 
     const saveContents = () => {
       // 저장 로직
-      state.from.uptime =
-        today.getFullYear() +
-        '.' +
-        (today.getMonth() + 1 < 10
-          ? '0' + (today.getMonth() + 1)
-          : today.getMonth() + 1) +
-        '.' +
-        (today.getDate() < 10 ? '0' + today.getDate() : today.getDate())
-      console.log(state.from.uptime)
-      router.push({ path: '/' })
+      if (window.confirm('저장하시겠습니까?')) {
+        // 현재 년 월 일 을 찾아주는 로직!
+        state.from.uptime =
+          today.getFullYear() +
+          '.' +
+          (today.getMonth() + 1 < 10
+            ? '0' + (today.getMonth() + 1)
+            : today.getMonth() + 1) +
+          '.' +
+          (today.getDate() < 10 ? '0' + today.getDate() : today.getDate())
+        console.log(state.from.uptime)
+        axios
+          .post('/api/addContents', state.from)
+          .then(() => {
+            window.alert('저장되었습니다.')
+            router.push({ path: '/' })
+          })
+          .catch(() => {
+            window.alert('모든내용을 채워주세요')
+          })
+      }
     }
     return { state, saveContents }
   },

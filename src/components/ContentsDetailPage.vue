@@ -4,30 +4,35 @@
     <div class="title">
       <span>제목 : </span
       ><input
-        v-if="0"
+        v-if="!state.update"
         type="text"
-        v-model="state.fakeData[0].title"
+        v-model="state.content.title"
         name=""
         id=""
       />
-      <span v-if="1">{{ state.fakeData[0].title }}</span>
+      <span v-if="state.update">{{ state.tempData.title }}</span>
     </div>
     <br />
     <hr />
     <div>
       <div class="contents" v-if="!state.update">
-        {{ state.fakeData[0].contents }}
+        {{ state.tempData.contents }}
       </div>
       <textarea
         class="contents"
-        v-model="state.fakeData[0].contents"
+        v-model="state.content.contents"
         v-if="state.update"
       /><br />
       <div class="btn">
-        <button v-if="!state.update" @click="updateContents()">수정</button>
+        <button v-if="!state.update" @click="putcon(state.content.userIdx)">
+          수정
+        </button>
         <button v-if="state.update" @click="updateContents()">완료</button>
         |
-        <button @click="deletContents()">삭제</button>
+        <button v-if="!state.update" @click="deletContents(state.content.idx)">
+          삭제
+        </button>
+        <button v-if="state.update" @click="cancell()">취소</button>
       </div>
     </div>
 
@@ -38,51 +43,82 @@
 import router from '@/router'
 import { reactive } from '@vue/reactivity'
 import store from '@/store'
+import axios from 'axios'
 
 export default {
   components: {},
   data() {
     return {
-      exData: ''
+      content_idx: 0
     }
   },
   setup() {
     const state = reactive({
-      fakeData: {
-        id: '',
-        idx: 0,
+      tempData: {
+        idx: '',
+        userIdx: 0,
         title: '',
         contents: '',
-        time: ''
+        uptime: ''
+      },
+      content: {
+        idx: store.state.detailNum.idx,
+        userIdx: 0,
+        title: '',
+        contents: '',
+        uptime: ''
       },
       update: false
     })
 
     const idx = store.state.detailNum.idx
 
-    state.fakeData = store.state.fakeData.filter((data) => {
-      return data.idx === idx
+    axios.get(`/api/detail/content/${idx}`).then((res) => {
+      state.content = res.data
+      state.tempData = state.content
     })
-
-    const readContents = () => {
-      // db와 통신하여 클릭한 게시글을 담아줘야쥬
-      // state.form.tilte and state.form.contents 에 담아 줌
+    const putcon = (userIdx) => {
+      if (userIdx === store.state.account.id) {
+        state.update = !state.update
+      } else {
+        window.alert('수정할 권한이 없습니다')
+      }
     }
     const updateContents = () => {
-      state.update = !state.update
-      // 업데이트 로직
+      if (window.confirm('저장하시겠습니까?')) {
+        state.update = !state.update
+        axios
+          .put('api/content/update', state.content)
+          .then(() => {
+            window.alert('수정완료!')
+          })
+          .catch((e) => {
+            window.alert('권한이 없습니다')
+          })
+      } else {
+        state.update = !state.update
+      }
     }
-
-    const deletContents = () => {
+    const cancell = () => {
+      state.update = !state.update
+    }
+    const deletContents = (idx) => {
       // 기본은 삭제 버튼 비활성화 시켜야함
       // 회원정보 체크로직 만들어야함
       const check = window.confirm('삭제하시겠습니까 ?')
       if (check) {
-        // 삭제로직 작동 !
-        router.push({ path: '/' })
+        axios
+          .delete(`/api/content/delete/${idx}`)
+          .then(() => {
+            router.push({ path: '/' })
+          })
+          .catch(() => {
+            window.alert('삭제할 권한이 없습니다.')
+          })
       }
     }
-    return { state, updateContents, deletContents, readContents }
+
+    return { state, updateContents, deletContents, cancell, putcon }
   },
   created() {},
   mounted() {},

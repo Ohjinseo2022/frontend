@@ -1,13 +1,19 @@
 <template>
   <div class="login">
     <span>Login</span>
-    <input type="text" placeholder="ID" v-model="state.form.id" /><br />
+    <input
+      type="text"
+      placeholder="ID"
+      v-model="state.form.id"
+      @keyup.enter="submit()"
+    /><br />
     <input
       type="password"
       placeholder="PASSWORD"
       v-model="state.form.password"
+      @keyup.enter="submit()"
     /><br />
-    <button @click="submit()">로그인</button>
+    <button @click="submit()" @keyup.enter="submit()">로그인</button>
     <div>
       <router-link to="/Sign">회원가입</router-link>
     </div>

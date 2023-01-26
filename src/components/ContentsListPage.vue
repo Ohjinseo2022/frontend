@@ -11,13 +11,13 @@
         <th>작성시간</th>
         <th>댓글수</th>
       </tr>
-      <tr v-for="i in state.fakeData" :key="i.idx">
-        <td>{{ i.idx }}</td>
+      <tr v-for="(i, num) in state.contents" :key="i.idx">
+        <td>{{ num + 1 }}</td>
         <td>
           <div @click="detailgo(i.idx)">{{ i.title }}</div>
         </td>
-        <td>{{ i.id }}</td>
-        <td>{{ i.time }}</td>
+        <td>{{ state.userName[num] }}</td>
+        <td>{{ i.uptime }}</td>
         <td>0</td>
       </tr>
     </table>
@@ -32,17 +32,26 @@ import router from '@/router'
 
 import { reactive } from '@vue/reactivity'
 import { useStore } from 'vuex'
+import axios from 'axios'
 
 export default {
   components: {},
   data() {
     return {
-      sampleData: ''
+      contents: []
     }
   },
 
   setup() {
     const state = reactive({
+      contents: {
+        idx: [],
+        userIdx: [],
+        title: [],
+        contents: [],
+        uptime: []
+      },
+      userName: [],
       fakeData: {
         id: [],
         idx: [],
@@ -56,7 +65,13 @@ export default {
       if (store.state.account.id) {
         router.push({ path: '/create' })
       } else {
-        window.alert('로그인한 회원만 글쓰기가 가능합니다.')
+        if (
+          window.confirm(
+            '로그인한 회원만 글쓰기가 가능합니다.\n로그인창으로 이동할까요 ?'
+          )
+        ) {
+          router.push({ path: '/login' })
+        }
       }
     }
     state.fakeData = store.state.fakeData
@@ -64,6 +79,12 @@ export default {
       store.commit('setNumber', e)
       router.push({ path: '/detail' })
     }
+    axios.get('/api/contents/all').then((res) => {
+      state.contents = res.data
+    })
+    axios.get('/api/contents/name', state.contents.userIdx).then((res) => {
+      state.userName = res.data
+    })
 
     return { createText, state, detailgo }
   },

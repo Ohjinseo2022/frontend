@@ -1,5 +1,5 @@
 import { createStore } from 'vuex'
-
+import createPersistedState from 'vuex-persistedstate'
 export default createStore({
   state: {
     account: {
@@ -65,5 +65,10 @@ export default createStore({
     }
   },
   actions: {},
-  modules: {}
+  modules: {},
+  plugins: [
+    createPersistedState({
+      paths: ['detailNum.idx']
+    })
+  ]
 })

@@ -20,23 +20,23 @@ export default {
     const check = () => {
       axios.get('/api/login/check').then((res) => {
         if (res.data || res.data !== '') {
-          console.log(res.data)
           store.commit('setAccount', res.data)
-          console.log('로그인중')
         } else {
           store.commit('setAccount', 0)
-
-          console.log('로그인이 필요함')
         }
       })
     }
     const findName = () => {
-      axios.get('/api/login/findName').then((res) => {
-        if (res.data) {
-          console.log(res.data)
-          store.commit('setName', res.data)
-        }
-      })
+      axios
+        .get('/api/login/findName')
+        .then((res) => {
+          if (res.data) {
+            store.commit('setName', res.data)
+          }
+        })
+        .catch(() => {
+          console.log('로그인 이전')
+        })
     }
 
     const route = useRoute()
